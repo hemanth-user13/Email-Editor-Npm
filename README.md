@@ -2,8 +2,13 @@
 
 A professional, fully customizable drag-and-drop email template editor built with React, Craft.js, Tailwind CSS, and shadcn/ui.
 
-![Editor UI](src/assets/emailEditor1.png)
-![Editor UI](src/assets/emailEditor2.png)
+<p align="center">
+  <img src="https://github.com/hemanth-user13/Email-Editor-Npm/blob/master/src/assets/emailEditor1.png" width="900"/>
+</p>
+
+<p align="center">
+  <img src="https://github.com/hemanth-user13/Email-Editor-Npm/blob/master/src/assets/emailEditor2.png" width="900"/>
+</p>
 
 ## Features
 
