@@ -23,11 +23,8 @@ A professional, fully customizable drag-and-drop email template editor built wit
 
 ## Installation
 
-```bash
-# Copy the src/components/editor directory into your project
-cp -r src/components/editor your-project/src/components/editor
-cp src/lib/htmlExporter.ts your-project/src/lib/htmlExporter.ts
-```
+````bash
+
 
 ### Peer Dependencies
 
@@ -35,7 +32,7 @@ Ensure your project has these installed:
 
 ```bash
 npm install @craftjs/core react react-dom lucide-react tailwindcss tailwind-merge clsx class-variance-authority
-```
+````
 
 Also requires [shadcn/ui](https://ui.shadcn.com/) components: `button`, `scroll-area`, `tabs`, `accordion`, `dialog`, `dropdown-menu`, `popover`, `label`, `separator`.
 
@@ -59,7 +56,7 @@ export default {
 ### Basic
 
 ```tsx
-import { EmailEditor } from "@/components/editor";
+import { EmailEditor } from "react-tailwind-email-editor";
 
 function App() {
   return <EmailEditor />;
@@ -69,7 +66,7 @@ function App() {
 ### With Custom Components
 
 ```tsx
-import { EmailEditor } from "@/components/editor";
+import { EmailEditor } from "react-tailwind-email-editor";
 import { MyCustomBlock } from "./MyCustomBlock";
 import { Puzzle } from "lucide-react";
 
@@ -93,7 +90,7 @@ function App() {
 ### Full Customization
 
 ```tsx
-import { EmailEditor } from "@/components/editor";
+import { EmailEditor } from "react-tailwind-email-editor";
 
 function App() {
   return (

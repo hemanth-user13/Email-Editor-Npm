@@ -7,8 +7,8 @@ import { RenderNode } from "./RenderNode";
 import { EditorProvider, useEditorConfig } from "./context";
 import { DEFAULT_COMPONENTS, buildResolver } from "./defaultComponents";
 import { generateEmailHtml } from "../../lib/htmlExporter";
-import { Button } from "../../components/ui/button";
-import { ScrollArea } from "../../components/ui/scroll-area";
+import { Button } from "../ui/button";
+import { ScrollArea } from "../ui/scroll-area";
 import {
   Code,
   Copy,
@@ -29,7 +29,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "../../components/ui/dialog";
+} from "../ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,7 +37,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
   DropdownMenuLabel,
-} from "../../components/ui/dropdown-menu";
+} from "../ui/dropdown-menu";
 
 import type {
   EmailEditorProps,
@@ -500,5 +500,3 @@ export const EmailEditor: React.FC<EmailEditorProps> = ({
     </EditorProvider>
   );
 };
-
-export default EmailEditor;
