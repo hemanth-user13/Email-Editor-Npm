@@ -9,13 +9,22 @@ export default defineConfig({
   clean: true,
   outDir: "dist",
   target: "es2018",
-  external: ["react", "react-dom"],
+
+  external: [
+    "react",
+    "react-dom",
+    "react/jsx-runtime",
+    "react/jsx-dev-runtime"
+  ],
+
   treeshake: true,
   splitting: false,
+
   esbuildPlugins: [sassPlugin()],
+
   outExtension({ format }) {
     return {
-      js: format === "esm" ? ".mjs" : ".js",
+      js: format === "esm" ? ".mjs" : ".js"
     };
-  },
+  }
 });
