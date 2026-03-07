@@ -2,6 +2,9 @@
 
 A professional, fully customizable drag-and-drop email template editor built with React, Craft.js, Tailwind CSS, and shadcn/ui.
 
+![Editor UI](src/assets/Screenshot%202026-03-07%20173128.png)
+![Editor UI](src/assets/Screenshot%202026-03-07%20173216.png)
+
 ## Features
 
 - 🎨 **Dark mode** by default with `dark:` class support
