@@ -48,7 +48,7 @@ export {
 export { DEFAULT_COMPONENTS, buildResolver, getCategories } from './defaultComponents';
 
 // ─── Utilities ──────────────────────────────────────────────────────────────
-export { generateEmailHtml } from '@/lib/htmlExporter';
+export { generateEmailHtml } from '../../lib/htmlExporter';
 
 // ─── Internal UI (for advanced customization) ───────────────────────────────
 export { Paper } from './Paper';

@@ -1,5 +1,5 @@
 import { SerializedNodes } from '@craftjs/core';
-import type { HtmlRenderer } from '@/components/editor/types';
+import type { HtmlRenderer } from '../components/editor';
 
 interface NodeData {
   type: { resolvedName: string };

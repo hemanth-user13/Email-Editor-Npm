@@ -1,13 +1,13 @@
-import React from 'react';
-import { useEditor, Element } from '@craftjs/core';
+import React from "react";
+import { useEditor, Element } from "@craftjs/core";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion';
-import { useEditorConfig } from './context';
-import type { EditorComponentConfig } from './types';
+} from "../ui/accordion";
+import { useEditorConfig } from "./context";
+import type { EditorComponentConfig } from "./types";
 
 interface ToolboxItemProps {
   name: string;
@@ -50,7 +50,7 @@ export const Toolbox = () => {
   const grouped = React.useMemo(() => {
     const map: Record<string, Array<[string, EditorComponentConfig]>> = {};
     for (const [name, config] of Object.entries(components)) {
-      const cat = config.category || 'Other';
+      const cat = config.category || "Other";
       if (!map[cat]) map[cat] = [];
       map[cat].push([name, config]);
     }
@@ -66,7 +66,9 @@ export const Toolbox = () => {
           <AccordionItem
             key={category}
             value={category}
-            className={idx < categoryKeys.length - 1 ? 'border-b' : 'border-b-0'}
+            className={
+              idx < categoryKeys.length - 1 ? "border-b" : "border-b-0"
+            }
           >
             <AccordionTrigger className="py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:no-underline">
               {category}
@@ -77,10 +79,14 @@ export const Toolbox = () => {
                   <ToolboxItem key={name} name={name} config={config} />
                 ))}
               </div>
-              {category === 'Dynamic' && (
+              {category === "Dynamic" && (
                 <div className="mt-3 p-3 bg-muted/50 rounded-lg">
                   <p className="text-xs text-muted-foreground">
-                    Use variables like <code className="bg-primary/10 text-primary px-1 rounded">{'{{first_name}}'}</code> for personalized emails
+                    Use variables like{" "}
+                    <code className="bg-primary/10 text-primary px-1 rounded">
+                      {"{{first_name}}"}
+                    </code>{" "}
+                    for personalized emails
                   </p>
                 </div>
               )}
