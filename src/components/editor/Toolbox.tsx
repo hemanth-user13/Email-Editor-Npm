@@ -60,7 +60,7 @@ export const Toolbox = () => {
   const categoryKeys = Object.keys(grouped);
 
   return (
-    <div className="p-3">
+    <div className="p-5">
       <Accordion type="multiple" defaultValue={categoryKeys}>
         {categoryKeys.map((category, idx) => (
           <AccordionItem

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { Editor, Frame, Element, useEditor } from "@craftjs/core";
 import { Toolbox } from "./Toolbox";
 import { SettingsPanel } from "./SettingsPanel";
@@ -7,8 +7,14 @@ import { RenderNode } from "./RenderNode";
 import { EditorProvider, useEditorConfig } from "./context";
 import { DEFAULT_COMPONENTS, buildResolver } from "./defaultComponents";
 import { generateEmailHtml } from "../../lib/htmlExporter";
-import { Button } from "../ui/button";
-import { ScrollArea } from "../ui/scroll-area";
+import { Button } from "../../components/ui/button";
+import { ScrollArea } from "../../components/ui/scroll-area";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../../components/ui/tabs";
 import {
   Code,
   Copy,
@@ -19,9 +25,11 @@ import {
   Palette,
   Settings,
   Download,
-  FileText,
-  Sparkles,
   LayoutTemplate,
+  Layers,
+  Paintbrush,
+  Moon,
+  Sun,
 } from "lucide-react";
 import {
   Dialog,
@@ -29,7 +37,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "../ui/dialog";
+} from "../../components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,16 +45,18 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
   DropdownMenuLabel,
-} from "../ui/dropdown-menu";
+} from "../../components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "../../components/ui/popover";
+import { Label } from "../../components/ui/label";
 
 import type {
   EmailEditorProps,
   ComponentRegistry,
-  EditorTheme,
-  EditorSlots,
   EmailTemplate,
-  EditorCallbacks,
-  HtmlRenderer,
 } from "./types";
 
 import {
@@ -55,26 +65,145 @@ import {
   EmailFooter,
   EmailButton,
   TextBlock,
-  ImageBlock,
-  Divider,
   InvoiceTable,
   Spacer,
-  SocialLinks,
-  TwoColumn,
-  Countdown,
-  PromoCode,
-  Testimonial,
-  VideoPlaceholder,
-  VariableText,
-  IconList,
 } from "./components";
+
+// ─── Color Customizer ───────────────────────────────────────────────────────
+
+const COLOR_PRESETS = [
+  { name: "Blue", hsl: "222.2 47.4% 11.2%" },
+  { name: "Indigo", hsl: "243 75% 59%" },
+  { name: "Emerald", hsl: "160 84% 39%" },
+  { name: "Rose", hsl: "346 77% 50%" },
+  { name: "Amber", hsl: "32 95% 44%" },
+  { name: "Violet", hsl: "263 70% 50%" },
+  { name: "Cyan", hsl: "192 91% 36%" },
+  { name: "Slate", hsl: "215 20% 35%" },
+];
+
+interface ColorCustomizerProps {
+  value?: string;
+  onColorChange: (primaryHsl: string) => void;
+}
+
+const ColorCustomizer = ({ value, onColorChange }: ColorCustomizerProps) => {
+  const [customColor, setCustomColor] = useState("#1e293b");
+
+  const applyColor = (hsl: string) => {
+    onColorChange(hsl);
+  };
+
+  const hexToHsl = (hex: string): string => {
+    const r = parseInt(hex.slice(1, 3), 16) / 255;
+    const g = parseInt(hex.slice(3, 5), 16) / 255;
+    const b = parseInt(hex.slice(5, 7), 16) / 255;
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h = 0;
+    let s = 0;
+    const l = (max + min) / 2;
+
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r:
+          h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+          break;
+        case g:
+          h = ((b - r) / d + 2) / 6;
+          break;
+        case b:
+          h = ((r - g) / d + 4) / 6;
+          break;
+      }
+    }
+
+    return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+  };
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-2 h-8 text-xs">
+          <Paintbrush className="h-3.5 w-3.5" />
+          Primary
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-64" align="end">
+        <div className="space-y-3">
+          <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Primary Color
+          </Label>
+          <div className="grid grid-cols-4 gap-2">
+            {COLOR_PRESETS.map((preset) => (
+              <button
+                key={preset.name}
+                type="button"
+                onClick={() => applyColor(preset.hsl)}
+                className="group flex flex-col items-center gap-1"
+                title={preset.name}
+              >
+                <div
+                  className="w-8 h-8 rounded-full border-2 transition-all shadow-sm"
+                  style={{
+                    backgroundColor: `hsl(${preset.hsl})`,
+                    borderColor:
+                      value === preset.hsl
+                        ? "hsl(var(--foreground))"
+                        : "transparent",
+                  }}
+                />
+                <span className="text-[10px] text-muted-foreground">
+                  {preset.name}
+                </span>
+              </button>
+            ))}
+          </div>
+          <div className="pt-2 border-t border-border">
+            <Label className="text-xs text-muted-foreground mb-1.5 block">
+              Custom Color
+            </Label>
+            <div className="flex gap-2 items-center">
+              <input
+                type="color"
+                value={customColor}
+                onChange={(e) => {
+                  setCustomColor(e.target.value);
+                  applyColor(hexToHsl(e.target.value));
+                }}
+                className="w-10 h-8 rounded border border-border cursor-pointer bg-background"
+              />
+              <span className="text-xs text-muted-foreground font-mono">
+                {customColor}
+              </span>
+            </div>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+};
 
 // ─── TopBar (internal) ──────────────────────────────────────────────────────
 
-const TopBar = () => {
-  const { actions, query, canUndo, canRedo } = useEditor((state, query) => ({
-    canUndo: state.options.enabled && query.history.canUndo(),
-    canRedo: state.options.enabled && query.history.canRedo(),
+interface TopBarProps {
+  isDarkMode: boolean;
+  onToggleDarkMode: () => void;
+  primaryColor?: string;
+  onPrimaryColorChange: (primaryHsl: string) => void;
+}
+
+const TopBar = ({
+  isDarkMode,
+  onToggleDarkMode,
+  primaryColor,
+  onPrimaryColorChange,
+}: TopBarProps) => {
+  const { actions, query, canUndo, canRedo } = useEditor((state, queryCtx) => ({
+    canUndo: state.options.enabled && queryCtx.history.canUndo(),
+    canRedo: state.options.enabled && queryCtx.history.canRedo(),
   }));
 
   const { title, logo, templates, callbacks, slots, htmlRenderers } =
@@ -151,7 +280,6 @@ const TopBar = () => {
     }
   };
 
-  // Custom toolbar slot
   if (slots.toolbar) {
     return React.createElement(slots.toolbar, {
       onExport: getHtml,
@@ -164,28 +292,27 @@ const TopBar = () => {
 
   return (
     <>
-      <div className="flex items-center justify-between px-4 py-3 border-b bg-background">
-        <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-background">
+        <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            {logo || (
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
-                <Palette className="h-4 w-4 text-primary-foreground" />
+            {/* {logo || (
+              <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
+                <Palette className="h-3.5 w-3.5 text-primary-foreground" />
               </div>
-            )}
-            <div>
-              <h1 className="text-sm font-bold leading-tight">{title}</h1>
-              <p className="text-[10px] text-muted-foreground">
-                Drag & Drop Builder
-              </p>
-            </div>
+            )} */}
+            <h1 className="text-sm font-semibold text-foreground">{title}</h1>
           </div>
 
-          <div className="h-6 w-px bg-border" />
+          <div className="h-5 w-px bg-border" />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2">
-                <LayoutTemplate className="h-4 w-4" />
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 h-8 text-xs"
+              >
+                <LayoutTemplate className="h-3.5 w-3.5" />
                 Templates
               </Button>
             </DropdownMenuTrigger>
@@ -223,45 +350,62 @@ const TopBar = () => {
           </DropdownMenu>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 bg-muted rounded-md p-0.5">
+        <div className="flex items-center gap-1.5">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onToggleDarkMode}
+            className="gap-1.5 h-8 text-xs"
+          >
+            {isDarkMode ? (
+              <Sun className="h-3.5 w-3.5" />
+            ) : (
+              <Moon className="h-3.5 w-3.5" />
+            )}
+            {isDarkMode ? "Light" : "Dark"}
+          </Button>
+
+          <ColorCustomizer
+            value={primaryColor}
+            onColorChange={onPrimaryColorChange}
+          />
+
+          <div className="flex items-center gap-0.5 bg-muted rounded-md p-0.5">
             <Button
               variant="ghost"
               size="sm"
               disabled={!canUndo}
               onClick={() => actions.history.undo()}
-              className="h-8 w-8 p-0"
+              className="h-7 w-7 p-0"
               title="Undo"
             >
-              <Undo2 className="h-4 w-4" />
+              <Undo2 className="h-3.5 w-3.5" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
               disabled={!canRedo}
               onClick={() => actions.history.redo()}
-              className="h-8 w-8 p-0"
+              className="h-7 w-7 p-0"
               title="Redo"
             >
-              <Redo2 className="h-4 w-4" />
+              <Redo2 className="h-3.5 w-3.5" />
             </Button>
           </div>
-          <div className="w-px h-6 bg-border" />
           <Button
             variant="outline"
             size="sm"
             onClick={handlePreview}
-            className="gap-2"
+            className="gap-1.5 h-8 text-xs"
           >
-            <Eye className="h-4 w-4" /> Preview
+            <Eye className="h-3.5 w-3.5" /> Preview
           </Button>
           <Button
-            variant="default"
             size="sm"
             onClick={handleExport}
-            className="gap-2"
+            className="gap-1.5 h-8 text-xs"
           >
-            <Code className="h-4 w-4" /> Export HTML
+            <Code className="h-3.5 w-3.5" /> Export
           </Button>
         </div>
       </div>
@@ -311,17 +455,6 @@ const TopBar = () => {
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
               <span>Email Preview</span>
-              <div className="flex gap-1 bg-muted rounded-lg p-1">
-                {/* <Button
-                  variant={previewDevice === "desktop" ? "secondary" : "ghost"}
-                  size="sm"
-                  onClick={() => setPreviewDevice("desktop")}
-                  className="h-7 px-3 text-xs"
-                >
-                  Desktop
-                </Button> */}
-                {/* <Button variant={previewDevice === 'mobile' ? 'secondary' : 'ghost'} size="sm" onClick={() => setPreviewDevice('mobile')} className="h-7 px-3 text-xs">Mobile</Button> */}
-              </div>
             </DialogTitle>
             <DialogDescription>
               Preview how your email will look in email clients.
@@ -338,11 +471,11 @@ const TopBar = () => {
                 className={`mx-auto transition-all duration-300 ${previewDevice === "mobile" ? "max-w-[375px]" : "max-w-full"}`}
               >
                 <div className="border rounded-lg bg-muted/30 overflow-hidden">
-                  {/* {previewDevice === 'mobile' && (
+                  {previewDevice === "mobile" && (
                     <div className="h-6 bg-muted flex items-center justify-center">
                       <div className="w-16 h-1 bg-muted-foreground/30 rounded-full" />
                     </div>
-                  )} */}
+                  )}
                   <iframe
                     srcDoc={htmlCode}
                     className="w-full min-h-[500px] bg-white"
@@ -361,27 +494,91 @@ const TopBar = () => {
   );
 };
 
+// ─── Left Sidebar with Tabs ─────────────────────────────────────────────────
+//@ts-ignore
+const LeftSidebar = ({ setActiveTab, activeTab }) => {
+  const { components, slots } = useEditorConfig();
+  const { selectedNodeId } = useEditor((state) => ({
+    //@ts-ignore
+    selectedNodeId: state.events.selected[0],
+  }));
+
+  useEffect(() => {
+    if (selectedNodeId) {
+      setActiveTab("properties");
+    }
+  }, [selectedNodeId]);
+
+  const categories = useMemo(() => {
+    return Object.keys(components).reduce<string[]>((acc, k) => {
+      const cat = components[k].category || "Other";
+      if (!acc.includes(cat)) acc.push(cat);
+      return acc;
+    }, []);
+  }, [components]);
+
+  return (
+    <div className="h-full flex flex-col bg-background border-r border-border">
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) =>
+          setActiveTab(value as "components" | "properties")
+        }
+        className="flex-1 flex flex-col"
+      >
+        <div className="px-2 pt-2 border-b border-border">
+          <TabsList className="w-full h-9 bg-muted/50">
+            <TabsTrigger
+              value="components"
+              className="flex-1 gap-1.5 text-xs data-[state=active]:bg-background"
+            >
+              <Layers className="h-3.5 w-3.5" />
+              Components
+            </TabsTrigger>
+            <TabsTrigger
+              value="properties"
+              className="flex-1 gap-1.5 text-xs data-[state=active]:bg-background"
+            >
+              <Settings className="h-3.5 w-3.5" />
+              Properties
+            </TabsTrigger>
+          </TabsList>
+        </div>
+
+        <TabsContent value="components" className="flex-1 mt-0 ">
+          <ScrollArea className="h-full max-h-[180vh]  ">
+            {slots.toolbox ? (
+              React.createElement(slots.toolbox, { components, categories })
+            ) : (
+              <Toolbox />
+            )}
+          </ScrollArea>
+        </TabsContent>
+
+        <TabsContent value="properties" className="flex-1 mt-0 ">
+          <div className="h-full">
+            <SettingsPanel />
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+};
+
 // ─── Default content ────────────────────────────────────────────────────────
 
-const defaultEmailContent = (
-  <Element is={Paper} canvas>
-    <EmailHeader />
-    <Element is={Container} canvas>
-      <TextBlock
-        text="Thank you for your business! Please find your invoice details below."
-        fontSize={16}
-        align="center"
-      />
-      <Spacer height={10} />
-      <InvoiceTable />
-      <Spacer height={20} />
-      <EmailButton text="Pay Now" href="#" />
-    </Element>
-    <EmailFooter />
-  </Element>
-);
+const defaultEmailContent = <Element is={Paper} canvas></Element>;
 
 // ─── Main EmailEditor Component ─────────────────────────────────────────────
+
+const getReadablePrimaryForeground = (primaryHsl: string): string => {
+  const lightness = Number.parseFloat(
+    primaryHsl.trim().split(/\s+/)[2]?.replace("%", "") || "50",
+  );
+  return lightness > 60 ? "222.2 47.4% 11.2%" : "210 40% 98%";
+};
+
+type CssVariablesStyle = React.CSSProperties & Record<`--${string}`, string>;
 
 export const EmailEditor: React.FC<EmailEditorProps> = ({
   components: userComponents,
@@ -397,17 +594,19 @@ export const EmailEditor: React.FC<EmailEditorProps> = ({
   htmlRenderers = {},
   showToolbar = true,
   showToolbox = true,
-  showSettingsPanel = true,
+  darkMode = true,
   className,
   style,
 }) => {
-  // Merge component registries
   const mergedComponents = useMemo<ComponentRegistry>(() => {
     if (replaceBuiltins) return userComponents || {};
     return { ...DEFAULT_COMPONENTS, ...(userComponents || {}) };
   }, [userComponents, replaceBuiltins]);
 
-  // Build the Craft.js resolver from registry
+  const [activeTab, setActiveTab] = useState<"components" | "properties">(
+    "components",
+  );
+
   const resolver = useMemo(() => {
     const res = buildResolver(mergedComponents);
     res.Paper = Paper;
@@ -415,6 +614,57 @@ export const EmailEditor: React.FC<EmailEditorProps> = ({
   }, [mergedComponents]);
 
   const renderNodeFn = (slots.renderNode || RenderNode) as any;
+
+  const [isDarkMode, setIsDarkMode] = useState(!darkMode);
+  const [primaryColor, setPrimaryColor] = useState<string | undefined>(
+    theme.colors?.primary,
+  );
+
+  useEffect(() => {
+    setPrimaryColor(theme.colors?.primary);
+  }, [theme.colors?.primary]);
+
+  const primaryForeground = useMemo(() => {
+    if (theme.colors?.primaryForeground) return theme.colors.primaryForeground;
+    if (!primaryColor) return undefined;
+    return getReadablePrimaryForeground(primaryColor);
+  }, [primaryColor, theme.colors?.primaryForeground]);
+
+  const themeColorVars = useMemo(() => {
+    const colors = theme.colors || {};
+    return {
+      background: colors.background,
+      foreground: colors.foreground,
+      border: colors.border,
+      muted: colors.muted,
+      "muted-foreground": colors.mutedForeground,
+      destructive: colors.destructive,
+      "panel-background": colors.panelBackground,
+      "canvas-background": colors.canvasBackground,
+    };
+  }, [theme.colors]);
+
+  const editorStyle = useMemo(() => {
+    const cssVars: CssVariablesStyle = { ...(style || {}) };
+
+    Object.entries(themeColorVars).forEach(([token, value]) => {
+      if (value) cssVars[`--${token}`] = value;
+    });
+
+    if (primaryColor) cssVars["--primary"] = primaryColor;
+    if (primaryForeground) cssVars["--primary-foreground"] = primaryForeground;
+    if (theme.borderRadius) cssVars["--radius"] = `${theme.borderRadius}px`;
+    if (theme.fontFamily) cssVars.fontFamily = theme.fontFamily;
+
+    return cssVars;
+  }, [
+    style,
+    themeColorVars,
+    primaryColor,
+    primaryForeground,
+    theme.borderRadius,
+    theme.fontFamily,
+  ]);
 
   return (
     <EditorProvider
@@ -429,71 +679,51 @@ export const EmailEditor: React.FC<EmailEditorProps> = ({
         logo,
         showToolbar,
         showToolbox,
-        showSettingsPanel,
+        showSettingsPanel: false,
       }}
     >
       <div
-        className={`h-screen flex flex-col bg-muted/30 ${className || ""}`}
-        style={style}
+        className={`h-screen flex flex-col ${isDarkMode ? "dark" : ""} bg-background text-foreground ${className || ""}`}
+        style={editorStyle}
       >
         <Editor resolver={resolver} onRender={renderNodeFn}>
-          {showToolbar && <TopBar />}
-          <div className="flex-1 flex overflow-hidden">
+          {showToolbar && (
+            <TopBar
+              isDarkMode={isDarkMode}
+              onToggleDarkMode={() => setIsDarkMode((prev) => !prev)}
+              primaryColor={primaryColor}
+              onPrimaryColorChange={(primaryHsl) => {
+                setPrimaryColor(primaryHsl);
+                callbacks.onColorChange?.(primaryHsl);
+              }}
+            />
+          )}
+          <div className="flex-1 flex">
             {showToolbox && (
-              <div className="w-72 border-r bg-background flex flex-col">
-                <div className="p-4 border-b">
-                  <div className="flex items-center gap-2">
-                    <Palette className="h-4 w-4 text-primary" />
-                    <span className="font-semibold text-sm">Components</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Drag components to canvas
-                  </p>
-                </div>
-                <ScrollArea className="flex-1">
-                  {slots.toolbox ? (
-                    React.createElement(slots.toolbox, {
-                      components: mergedComponents,
-                      categories: Object.keys(mergedComponents).reduce<
-                        string[]
-                      >((acc, k) => {
-                        const cat = mergedComponents[k].category || "Other";
-                        if (!acc.includes(cat)) acc.push(cat);
-                        return acc;
-                      }, []),
-                    })
-                  ) : (
-                    <Toolbox />
-                  )}
-                </ScrollArea>
+              <div className="w-auto max-w-96 flex-shrink-0">
+                <LeftSidebar
+                  setActiveTab={setActiveTab}
+                  activeTab={activeTab}
+                />
               </div>
             )}
 
             <div
-              className="flex-1 overflow-auto p-8 craftjs-renderer"
-              style={{ backgroundColor: "#e5e5e5" }}
+              className="flex-1 overflow-auto craftjs-renderer"
+              style={{
+                backgroundColor:
+                  theme.colors?.canvasBackground || "hsl(var(--muted))",
+              }}
             >
-              {initialState ? (
+              <div
+                className="p-8"
+                onClick={() => {
+                  setActiveTab("properties");
+                }}
+              >
                 <Frame data={initialState}>{defaultEmailContent}</Frame>
-              ) : (
-                <Frame>{defaultContent || defaultEmailContent}</Frame>
-              )}
-            </div>
-
-            {showSettingsPanel && (
-              <div className="w-80 border-l bg-background flex flex-col">
-                <div className="p-4 border-b">
-                  <div className="flex items-center gap-2">
-                    <Settings className="h-4 w-4 text-primary" />
-                    <span className="font-semibold text-sm">Properties</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Edit selected component
-                  </p>
-                </div>
-                <SettingsPanel />
               </div>
-            )}
+            </div>
           </div>
         </Editor>
       </div>

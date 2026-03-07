@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useMemo } from "react";
 import {
   EditorTheme,
   EditorSlots,
@@ -6,7 +6,7 @@ import {
   EditorCallbacks,
   EmailTemplate,
   HtmlRenderer,
-} from './types';
+} from "./types";
 
 interface EditorContextValue {
   components: ComponentRegistry;
@@ -19,13 +19,13 @@ interface EditorContextValue {
   logo?: React.ReactNode;
   showToolbar: boolean;
   showToolbox: boolean;
-  showSettingsPanel: boolean;
+  showSettingsPanel?: boolean;
 }
 
 const defaultTheme: EditorTheme = {
   paperWidth: 600,
   paperMinHeight: 800,
-  paperBackground: '#ffffff',
+  paperBackground: "#ffffff",
 };
 
 const EditorContext = createContext<EditorContextValue>({
@@ -35,7 +35,7 @@ const EditorContext = createContext<EditorContextValue>({
   templates: [],
   callbacks: {},
   htmlRenderers: {},
-  title: 'Email Editor',
+  title: "",
   showToolbar: true,
   showToolbox: true,
   showSettingsPanel: true,
@@ -45,19 +45,24 @@ export const useEditorConfig = () => useContext(EditorContext);
 
 interface EditorProviderProps {
   children: React.ReactNode;
-  value: Omit<EditorContextValue, 'theme'> & { theme: EditorTheme };
+  value: Omit<EditorContextValue, "theme"> & { theme: EditorTheme };
 }
 
-export const EditorProvider: React.FC<EditorProviderProps> = ({ children, value }) => {
+export const EditorProvider: React.FC<EditorProviderProps> = ({
+  children,
+  value,
+}) => {
   const mergedTheme = useMemo(
     () => ({ ...defaultTheme, ...value.theme }),
-    [value.theme]
+    [value.theme],
   );
 
   const ctx = useMemo(
     () => ({ ...value, theme: mergedTheme }),
-    [value, mergedTheme]
+    [value, mergedTheme],
   );
 
-  return <EditorContext.Provider value={ctx}>{children}</EditorContext.Provider>;
+  return (
+    <EditorContext.Provider value={ctx}>{children}</EditorContext.Provider>
+  );
 };
