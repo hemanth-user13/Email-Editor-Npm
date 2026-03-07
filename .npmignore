@@ -1,0 +1,35 @@
+# Create .npmignore file to exclude unnecessary files
+cat > .npmignore << 'EOF'
+# Source files
+src/
+*.tsx
+*.ts
+!dist/**/*.d.ts
+
+# Config files
+tsconfig.json
+tsup.config.ts
+.eslintrc
+.prettierrc
+
+# Development
+node_modules/
+.git/
+.github/
+*.log
+coverage/
+.DS_Store
+
+# Examples and docs
+examples/
+docs/
+*.md
+!README.md
+
+# Tests
+__tests__/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+EOF
