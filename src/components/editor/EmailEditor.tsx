@@ -31,14 +31,7 @@ import {
   Moon,
   Sun,
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuLabel,
-} from "../../components/ui/dropdown-menu";
+
 import {
   Popover,
   PopoverContent,
@@ -221,6 +214,165 @@ const Modal: React.FC<ModalProps> = ({
       </div>
     </div>,
     document.body,
+  );
+};
+
+// ─── Portable Dropdown (no Tailwind / shadcn dependency) ────────────────────
+
+interface DropdownItem {
+  key: string;
+  label: React.ReactNode;
+  onClick: () => void;
+  danger?: boolean;
+  separator?: never;
+}
+interface DropdownSeparator {
+  separator: true;
+  key: string;
+  label?: never;
+  onClick?: never;
+  danger?: never;
+}
+type DropdownEntry = DropdownItem | DropdownSeparator;
+
+interface DropdownProps {
+  trigger: React.ReactNode;
+  label?: string;
+  items: DropdownEntry[];
+  align?: "start" | "end";
+}
+
+const Dropdown: React.FC<DropdownProps> = ({
+  trigger,
+  label,
+  items,
+  align = "start",
+}) => {
+  const [open, setOpen] = useState(false);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  // Close on outside click
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (!containerRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  // Close on Escape
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [open]);
+
+  return (
+    <div
+      ref={containerRef}
+      style={{ position: "relative", display: "inline-block" }}
+    >
+      {/* Trigger */}
+      <div onClick={() => setOpen((v) => !v)}>{trigger}</div>
+
+      {/* Menu panel */}
+      {open && (
+        <div
+          style={{
+            position: "absolute",
+            top: "calc(100% + 6px)",
+            ...(align === "end" ? { right: 0 } : { left: 0 }),
+            zIndex: 9998,
+            minWidth: "224px",
+            backgroundColor: "#ffffff",
+            border: "1px solid #e5e7eb",
+            borderRadius: "8px",
+            boxShadow:
+              "0 8px 24px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)",
+            padding: "4px",
+            outline: "none",
+          }}
+        >
+          {/* Section label */}
+          {label && (
+            <div
+              style={{
+                padding: "6px 8px 4px 8px",
+                fontSize: "11px",
+                fontWeight: 600,
+                color: "#9ca3af",
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+              }}
+            >
+              {label}
+            </div>
+          )}
+
+          {items.map((entry) => {
+            if ("separator" in entry && entry.separator) {
+              return (
+                <div
+                  key={entry.key}
+                  style={{
+                    height: "1px",
+                    backgroundColor: "#f3f4f6",
+                    margin: "4px 0",
+                  }}
+                />
+              );
+            }
+            const item = entry as DropdownItem;
+            return (
+              <DropdownItemRow
+                key={item.key}
+                item={item}
+                onSelect={() => {
+                  item.onClick();
+                  setOpen(false);
+                }}
+              />
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const DropdownItemRow: React.FC<{
+  item: DropdownItem;
+  onSelect: () => void;
+}> = ({ item, onSelect }) => {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <button
+      onClick={onSelect}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        width: "100%",
+        padding: "7px 8px",
+        fontSize: "13px",
+        fontWeight: 400,
+        borderRadius: "6px",
+        border: "none",
+        background: hovered ? "#f9fafb" : "transparent",
+        cursor: "pointer",
+        color: item.danger ? "#ef4444" : "#111827",
+        textAlign: "left",
+        transition: "background 0.1s",
+      }}
+    >
+      {item.label}
+    </button>
   );
 };
 
@@ -488,8 +640,10 @@ const TopBar = ({
 
           <div className="h-5 w-px bg-border" />
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+          <Dropdown
+            align="start"
+            label="Quick Start Templates"
+            trigger={
               <Button
                 variant="outline"
                 size="sm"
@@ -498,39 +652,52 @@ const TopBar = ({
                 <LayoutTemplate className="h-3.5 w-3.5" />
                 Templates
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56">
-              <DropdownMenuLabel>Quick Start Templates</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {templates.map((template) => (
-                <DropdownMenuItem
-                  key={template.id}
-                  className="gap-2"
-                  onClick={() => handleLoadTemplate(template)}
-                >
-                  {template.icon &&
-                    React.createElement(template.icon, {
-                      className: "h-4 w-4 text-muted-foreground",
-                    })}
-                  <div>
-                    <div className="font-medium">{template.name}</div>
-                    {template.description && (
-                      <div className="text-xs text-muted-foreground">
-                        {template.description}
+            }
+            items={[
+              ...templates.map((template) => ({
+                key: template.id,
+                label: (
+                  <React.Fragment>
+                    {template.icon &&
+                      React.createElement(template.icon, {
+                        style: {
+                          width: 14,
+                          height: 14,
+                          color: "#9ca3af",
+                          flexShrink: 0,
+                        },
+                      })}
+                    <div>
+                      <div style={{ fontWeight: 500, fontSize: "13px" }}>
+                        {template.name}
                       </div>
-                    )}
-                  </div>
-                </DropdownMenuItem>
-              ))}
-              {templates.length > 0 && <DropdownMenuSeparator />}
-              <DropdownMenuItem
-                onClick={handleClearCanvas}
-                className="text-destructive"
-              >
-                Clear Canvas
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                      {template.description && (
+                        <div
+                          style={{
+                            fontSize: "11px",
+                            color: "#9ca3af",
+                            marginTop: 1,
+                          }}
+                        >
+                          {template.description}
+                        </div>
+                      )}
+                    </div>
+                  </React.Fragment>
+                ),
+                onClick: () => handleLoadTemplate(template),
+              })),
+              ...(templates.length > 0
+                ? [{ key: "sep-clear", separator: true as const }]
+                : []),
+              {
+                key: "clear",
+                label: "Clear Canvas",
+                onClick: handleClearCanvas,
+                danger: true,
+              },
+            ]}
+          />
         </div>
 
         <div className="flex items-center gap-1.5">

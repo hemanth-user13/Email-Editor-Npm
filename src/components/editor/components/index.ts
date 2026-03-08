@@ -8,7 +8,7 @@ export { Divider } from './Divider';
 export { InvoiceTable } from './InvoiceTable';
 export { Spacer } from './Spacer';
 export { SocialLinks } from './SocialLinks';
-export { TwoColumn } from './TwoColumn';
+// export { TwoColumn } from './TwoColumn';
 export { Countdown } from './Countdown';
 export { PromoCode } from './PromoCode';
 export { Testimonial } from './Testimonial';
