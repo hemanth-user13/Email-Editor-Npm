@@ -1,9 +1,16 @@
 # React Email Editor
 
-A professional, fully customizable drag-and-drop email template editor built with React, Craft.js, Tailwind CSS.
+Design professional email marketing templates on the fly with a powerful drag-and-drop editor.
+
+A fully customizable email template builder built with React, Craft.js, and Tailwind CSS that allows developers to visually design responsive email layouts and export production-ready HTML compatible with major email clients.
+
+Ideal for building marketing campaigns, newsletters, promotional emails, transactional emails, and invoice templates quickly without writing complex table-based email HTML.
 
 <p align="center">
   <img src="https://github.com/hemanth-user13/Email-Editor-Npm/blob/master/src/assets/emailEditor1.png" width="900"/>
+</p>
+<p align="center">
+  <img src="https://github.com/hemanth-user13/Email-Editor-Npm/blob/master/src/assets/emailEditor3.png" width="900"/>
 </p>
 
 <p align="center">
