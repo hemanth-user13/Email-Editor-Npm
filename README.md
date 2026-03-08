@@ -9,6 +9,7 @@ Ideal for building marketing campaigns, newsletters, promotional emails, transac
 <p align="center">
   <img src="https://github.com/hemanth-user13/Email-Editor-Npm/blob/master/src/assets/emailEditor1.png" width="900"/>
 </p>
+
 <p align="center">
   <img src="https://github.com/hemanth-user13/Email-Editor-Npm/blob/master/src/assets/emailEditor3.png" width="900"/>
 </p>
