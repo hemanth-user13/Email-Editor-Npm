@@ -1,10 +1,26 @@
 import { defineConfig } from "tsup";
 import { sassPlugin } from "esbuild-sass-plugin";
-import postcss from "postcss";
+import postcss, { AtRule } from "postcss";
 import tailwindcss from "@tailwindcss/postcss";
 import autoprefixer from "autoprefixer";
 import { writeFileSync, readFileSync } from "fs";
 import { resolve } from "path";
+
+// PostCSS plugin to unwrap @layer blocks into plain CSS
+const unwrapLayers = (): postcss.Plugin => ({
+  postcssPlugin: "unwrap-layers",
+  AtRule: {
+    layer(node: AtRule) {
+      // Only unwrap @layer X { ... } blocks, not @layer declarations
+      if (node.nodes) {
+        node.replaceWith(node.nodes);
+      } else {
+        node.remove();
+      }
+    },
+  },
+});
+unwrapLayers.postcss = true;
 
 export default defineConfig({
   entry: ["src/index.ts"],
@@ -19,7 +35,7 @@ export default defineConfig({
     "react",
     "react-dom",
     "react/jsx-runtime",
-    "react/jsx-dev-runtime"
+    "react/jsx-dev-runtime",
   ],
 
   treeshake: true,
@@ -29,7 +45,7 @@ export default defineConfig({
 
   outExtension({ format }) {
     return {
-      js: format === "esm" ? ".mjs" : ".js"
+      js: format === "esm" ? ".mjs" : ".js",
     };
   },
 
@@ -39,16 +55,12 @@ export default defineConfig({
     const result = await postcss([
       tailwindcss(),
       autoprefixer(),
+      unwrapLayers(), // 👈 properly unwraps @layer blocks
     ]).process(css, {
       from: resolve("src/styles.css"),
     });
 
-    // Remove @layer wrappers so it works in any project regardless of Tailwind version
-    const strippedCss = result.css
-      .replace(/@layer\s+[\w,\s]+\s*\{/g, "/* layer-start */")
-      .replace(/^}\s*$/gm, "/* layer-end */");
-
-    writeFileSync("dist/style.css", strippedCss);
-    console.log("✅ dist/style.css generated!");
+    writeFileSync("dist/style.css", result.css);
+    console.log("✅ dist/style.css generated (no @layer wrappers)!");
   },
 });
