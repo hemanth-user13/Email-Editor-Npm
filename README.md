@@ -6,6 +6,10 @@ A fully customizable email template builder built with React, Craft.js, and Tail
 
 Ideal for building marketing campaigns, newsletters, promotional emails, transactional emails, and invoice templates quickly without writing complex table-based email HTML.
 
+## 🚀 Live Demo
+
+👉 [Try it on Vercel](https://demo-email-editor.vercel.app/)
+
 <p align="center">
   <img src="https://github.com/hemanth-user13/Email-Editor-Npm/blob/master/src/assets/emailEditor1.png" width="900"/>
 </p>
