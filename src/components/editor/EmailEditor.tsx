@@ -983,6 +983,8 @@ export const EmailEditor: React.FC<EmailEditorProps> = ({
     "components",
   );
 
+  console.log(initialHtml)
+
   const resolver = useMemo(() => {
     const res = buildResolver(mergedComponents);
     res.Paper = Paper;
