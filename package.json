@@ -1,6 +1,6 @@
 {
   "name": "react-tailwind-email-editor",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "description": "A drag-and-drop React email editor and builder with Tailwind CSS support",
   "type": "module",
   "main": "./dist/index.js",
