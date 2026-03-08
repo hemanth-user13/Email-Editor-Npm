@@ -43,7 +43,12 @@ export default defineConfig({
       from: resolve("src/styles.css"),
     });
 
-    writeFileSync("dist/style.css", result.css);
+    // Remove @layer wrappers so it works in any project regardless of Tailwind version
+    const strippedCss = result.css
+      .replace(/@layer\s+[\w,\s]+\s*\{/g, "/* layer-start */")
+      .replace(/^}\s*$/gm, "/* layer-end */");
+
+    writeFileSync("dist/style.css", strippedCss);
     console.log("✅ dist/style.css generated!");
   },
 });
