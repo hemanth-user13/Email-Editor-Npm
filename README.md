@@ -53,10 +53,19 @@ export default {
 
 ## Usage
 
+> [!IMPORTANT]
+> You must import the stylesheet for the editor to display correctly:
+>
+> ```tsx
+> import "react-tailwind-email-editor/dist/style.css";
+> `
+> ```
+
 ### Basic
 
 ```tsx
 import { EmailEditor } from "react-tailwind-email-editor";
+import "react-tailwind-email-editor/dist/style.css";
 
 function App() {
   return <EmailEditor />;
@@ -67,6 +76,7 @@ function App() {
 
 ```tsx
 import { EmailEditor } from "react-tailwind-email-editor";
+import "react-tailwind-email-editor/dist/style.css";
 import { MyCustomBlock } from "./MyCustomBlock";
 import { Puzzle } from "lucide-react";
 
