@@ -154,6 +154,7 @@ function App() {
 | `templates`       | `EmailTemplate[]`              | `[]`             | Pre-defined templates                              |
 | `callbacks`       | `EditorCallbacks`              | `{}`             | Event handlers (onExport, onChange, etc.)          |
 | `initialState`    | `string`                       | —                | Serialized Craft.js state to restore               |
+| `initialHtml`     | `string`                       | —                | HTML string to parse and load into the editor      |
 | `defaultContent`  | `ReactNode`                    | —                | Default JSX content for the canvas                 |
 | `title`           | `string`                       | `'Email Editor'` | Toolbar title                                      |
 | `logo`            | `ReactNode`                    | —                | Custom logo element                                |

@@ -55,6 +55,7 @@ import {
   InvoiceTable,
   Spacer,
 } from "./components";
+import { importHtmlToState } from "../../lib/htmlImporter";
 
 // ─── Portable Modal (no Tailwind / shadcn dependency) ───────────────────────
 
@@ -971,6 +972,7 @@ export const EmailEditor: React.FC<EmailEditorProps> = ({
   darkMode = true,
   className,
   style,
+  initialHtml,
 }) => {
   const mergedComponents = useMemo<ComponentRegistry>(() => {
     if (replaceBuiltins) return userComponents || {};
@@ -1095,7 +1097,17 @@ export const EmailEditor: React.FC<EmailEditorProps> = ({
                   setActiveTab("properties");
                 }}
               >
-                <Frame data={initialState}>{defaultEmailContent}</Frame>
+                <div className="p-8">
+                  {initialState ? (
+                    <Frame data={initialState}>{defaultEmailContent}</Frame>
+                  ) : initialHtml ? (
+                    <Frame data={importHtmlToState(initialHtml)}>
+                      {defaultEmailContent}
+                    </Frame>
+                  ) : (
+                    <Frame>{defaultContent || defaultEmailContent}</Frame>
+                  )}
+                </div>
               </div>
             </div>
           </div>

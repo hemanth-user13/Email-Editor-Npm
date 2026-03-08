@@ -1,7 +1,7 @@
 {
   "name": "react-tailwind-email-editor",
   "version": "0.0.16",
-  "description": "A Rich Tailwind based email editor",
+  "description": "A drag-and-drop React email editor and builder with Tailwind CSS support",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -111,12 +111,21 @@
     "vitest": "^3.2.4"
   },
   "keywords": [
-    "react email editor",
-    "email builder",
-    "drag and drop email editor",
-    "react email builder",
-    "tailwind email editor",
-    "craftjs email builder"
+    "email-editor",
+    "email-builder",
+    "drag-and-drop",
+    "react",
+    "email-template",
+    "newsletter",
+    "craftjs",
+    "tailwind",
+    "wysiwyg",
+    "email-designer",
+    "html-email",
+    "responsive-email",
+    "email-marketing",
+    "visual-editor",
+    "react-email"
   ],
   "author": "hemanth-dev",
   "license": "ISC"

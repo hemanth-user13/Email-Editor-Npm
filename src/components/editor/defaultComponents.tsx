@@ -31,6 +31,7 @@ import { InvoiceTable } from "./components/InvoiceTable";
 import { Spacer } from "./components/Spacer";
 import { SocialLinks } from "./components/SocialLinks";
 // import { TwoColumn } from './components/TwoColumn';
+import { RawHtml } from "./components/RawHtml";
 import { Countdown } from "./components/Countdown";
 import { PromoCode } from "./components/PromoCode";
 import { Testimonial } from "./components/Testimonial";

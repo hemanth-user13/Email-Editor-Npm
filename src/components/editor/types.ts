@@ -123,6 +123,8 @@ export interface EmailEditorProps {
   templates?: EmailTemplate[];
   callbacks?: EditorCallbacks;
   initialState?: string;
+  /** HTML string to parse and load into the editor on mount */
+  initialHtml?: string;
   defaultContent?: React.ReactNode;
   title?: string;
   logo?: React.ReactNode;
