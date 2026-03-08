@@ -46,7 +46,6 @@ const decodeProps = (encoded: string): Record<string, unknown> | null => {
 export const importHtmlToState = (html: string): string => {
   nodeCounter = 0;
 
-  console.log("html is",html)
 
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
