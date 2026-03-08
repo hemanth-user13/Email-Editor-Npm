@@ -34,7 +34,7 @@ export {
   InvoiceTable,
   Spacer,
   SocialLinks,
-  TwoColumn,
+  // TwoColumn,
   Countdown,
   PromoCode,
   Testimonial,
