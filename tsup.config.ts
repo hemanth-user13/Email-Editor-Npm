@@ -1,5 +1,10 @@
 import { defineConfig } from "tsup";
 import { sassPlugin } from "esbuild-sass-plugin";
+import postcss from "postcss";
+import tailwindcss from "@tailwindcss/postcss";
+import autoprefixer from "autoprefixer";
+import { writeFileSync } from "fs";
+import { globSync } from "glob";
 
 export default defineConfig({
   entry: ["src/index.ts"],
@@ -26,5 +31,20 @@ export default defineConfig({
     return {
       js: format === "esm" ? ".mjs" : ".js"
     };
-  }
+  },
+
+  async onSuccess() {
+    const css = `@import "tailwindcss";`;
+
+    const result = await postcss([
+      tailwindcss({
+        //@ts-ignore
+        content: globSync("src/**/*.{ts,tsx}"),
+      }),
+      autoprefixer(),
+    ]).process(css, { from: undefined });
+
+    writeFileSync("dist/style.css", result.css);
+    console.log("✅ dist/style.css generated!");
+  },
 });
