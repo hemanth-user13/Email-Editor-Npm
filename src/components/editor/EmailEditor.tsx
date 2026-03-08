@@ -32,13 +32,6 @@ import {
   Sun,
 } from "lucide-react";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "../../components/ui/dialog";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -52,6 +45,7 @@ import {
   PopoverTrigger,
 } from "../../components/ui/popover";
 import { Label } from "../../components/ui/label";
+import { createPortal } from "react-dom";
 
 import type {
   EmailEditorProps,
@@ -68,6 +62,200 @@ import {
   InvoiceTable,
   Spacer,
 } from "./components";
+
+// ─── Portable Modal (no Tailwind / shadcn dependency) ───────────────────────
+
+interface ModalProps {
+  open: boolean;
+  onClose: () => void;
+  title?: React.ReactNode;
+  description?: React.ReactNode;
+  children: React.ReactNode;
+  maxWidth?: number;
+  maxHeight?: string;
+}
+
+const Modal: React.FC<ModalProps> = ({
+  open,
+  onClose,
+  title,
+  description,
+  children,
+  maxWidth = 672,
+  maxHeight = "85vh",
+}) => {
+  const panelRef = React.useRef<HTMLDivElement>(null);
+  const [closeHovered, setCloseHovered] = React.useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [open, onClose]);
+
+  useEffect(() => {
+    if (open) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = prev;
+      };
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (open && panelRef.current) panelRef.current.focus();
+  }, [open]);
+
+  if (!open) return null;
+
+  return createPortal(
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={title ? "modal-title" : undefined}
+      aria-describedby={description ? "modal-desc" : undefined}
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 9999,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "rgba(0,0,0,0.5)",
+        padding: "16px",
+      }}
+    >
+      <div
+        ref={panelRef}
+        tabIndex={-1}
+        style={{
+          position: "relative",
+          backgroundColor: "#ffffff",
+          borderRadius: "12px",
+          boxShadow: "0 20px 60px rgba(0,0,0,0.2), 0 4px 16px rgba(0,0,0,0.12)",
+          display: "flex",
+          flexDirection: "column",
+          width: "100%",
+          maxWidth: `${maxWidth}px`,
+          maxHeight,
+          overflowY: "auto",
+          outline: "none",
+        }}
+      >
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          aria-label="Close modal"
+          onMouseEnter={() => setCloseHovered(true)}
+          onMouseLeave={() => setCloseHovered(false)}
+          style={{
+            position: "absolute",
+            top: "14px",
+            right: "14px",
+            width: "32px",
+            height: "32px",
+            borderRadius: "8px",
+            border: "none",
+            background: closeHovered ? "#f3f4f6" : "transparent",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: closeHovered ? "#111827" : "#6b7280",
+            fontSize: "18px",
+            lineHeight: 1,
+            padding: 0,
+            flexShrink: 0,
+            transition: "background 0.15s, color 0.15s",
+          }}
+        >
+          ✕
+        </button>
+
+        {/* Header */}
+        {(title || description) && (
+          <div style={{ padding: "20px 24px 0 24px", flexShrink: 0 }}>
+            {title && (
+              <h2
+                id="modal-title"
+                style={{
+                  margin: 0,
+                  fontSize: "18px",
+                  fontWeight: 600,
+                  lineHeight: "1.4",
+                  color: "#111827",
+                }}
+              >
+                {title}
+              </h2>
+            )}
+            {description && (
+              <p
+                id="modal-desc"
+                style={{
+                  margin: "6px 0 0 0",
+                  fontSize: "14px",
+                  lineHeight: "1.5",
+                  color: "#6b7280",
+                }}
+              >
+                {description}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Body */}
+        <div
+          style={{ padding: "16px 24px 24px 24px", overflowY: "auto", flex: 1 }}
+        >
+          {children}
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+};
+
+// ─── Inline styles shared inside TopBar ─────────────────────────────────────
+
+const modalActionButtonStyle: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  padding: "6px 12px",
+  fontSize: "13px",
+  fontWeight: 500,
+  borderRadius: "6px",
+  border: "1px solid #d1d5db",
+  background: "#ffffff",
+  cursor: "pointer",
+  color: "#374151",
+  transition: "background 0.15s",
+};
+
+const codeScrollStyle: React.CSSProperties = {
+  height: "400px",
+  overflowY: "auto",
+  border: "1px solid #e5e7eb",
+  borderRadius: "6px",
+};
+
+const preStyle: React.CSSProperties = {
+  padding: "16px",
+  fontSize: "12px",
+  fontFamily:
+    "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+  whiteSpace: "pre-wrap",
+  margin: 0,
+  color: "#111827",
+};
 
 // ─── Color Customizer ───────────────────────────────────────────────────────
 
@@ -295,11 +483,6 @@ const TopBar = ({
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-background">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            {/* {logo || (
-              <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
-                <Palette className="h-3.5 w-3.5 text-primary-foreground" />
-              </div>
-            )} */}
             <h1 className="text-sm font-semibold text-foreground">{title}</h1>
           </div>
 
@@ -351,25 +534,6 @@ const TopBar = ({
         </div>
 
         <div className="flex items-center gap-1.5">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onToggleDarkMode}
-            className="gap-1.5 h-8 text-xs"
-          >
-            {isDarkMode ? (
-              <Sun className="h-3.5 w-3.5" />
-            ) : (
-              <Moon className="h-3.5 w-3.5" />
-            )}
-            {isDarkMode ? "Light" : "Dark"}
-          </Button>
-
-          <ColorCustomizer
-            value={primaryColor}
-            onColorChange={onPrimaryColorChange}
-          />
-
           <div className="flex items-center gap-0.5 bg-muted rounded-md p-0.5">
             <Button
               variant="ghost"
@@ -410,86 +574,129 @@ const TopBar = ({
         </div>
       </div>
 
-      {/* Export Dialog */}
-      <Dialog open={showCode} onOpenChange={setShowCode}>
-        <DialogContent className="max-w-4xl max-h-[80vh]">
-          <DialogHeader>
-            <DialogTitle>Export HTML</DialogTitle>
-            <DialogDescription>
-              Copy this HTML code to use in your email client or system.
-            </DialogDescription>
-          </DialogHeader>
-          {slots.exportDialog ? (
-            React.createElement(slots.exportDialog, {
-              html: htmlCode,
-              onClose: () => setShowCode(false),
-            })
-          ) : (
-            <>
-              <div className="flex gap-2 mb-2">
-                <Button variant="outline" size="sm" onClick={handleCopy}>
-                  {copied ? (
-                    <Check className="h-4 w-4 mr-2" />
-                  ) : (
-                    <Copy className="h-4 w-4 mr-2" />
-                  )}
-                  {copied ? "Copied!" : "Copy"}
-                </Button>
-                <Button variant="outline" size="sm" onClick={handleDownload}>
-                  <Download className="h-4 w-4 mr-2" /> Download
-                </Button>
-              </div>
-              <ScrollArea className="h-[400px] border rounded-md">
-                <pre className="p-4 text-xs font-mono whitespace-pre-wrap">
-                  {htmlCode}
-                </pre>
-              </ScrollArea>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Preview Dialog */}
-      <Dialog open={showPreview} onOpenChange={setShowPreview}>
-        <DialogContent className="max-w-5xl max-h-[90vh]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center justify-between">
-              <span>Email Preview</span>
-            </DialogTitle>
-            <DialogDescription>
-              Preview how your email will look in email clients.
-            </DialogDescription>
-          </DialogHeader>
-          {slots.previewDialog ? (
-            React.createElement(slots.previewDialog, {
-              html: htmlCode,
-              onClose: () => setShowPreview(false),
-            })
-          ) : (
-            <ScrollArea className="h-[600px]">
-              <div
-                className={`mx-auto transition-all duration-300 ${previewDevice === "mobile" ? "max-w-[375px]" : "max-w-full"}`}
+      {/* Export HTML Modal */}
+      <Modal
+        open={showCode}
+        onClose={() => setShowCode(false)}
+        title="Export HTML"
+        description="Copy this HTML code to use in your email client or system."
+        maxWidth={896}
+        maxHeight="80vh"
+      >
+        {slots.exportDialog ? (
+          React.createElement(slots.exportDialog, {
+            html: htmlCode,
+            onClose: () => setShowCode(false),
+          })
+        ) : (
+          <>
+            <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+              <button
+                onClick={handleCopy}
+                style={modalActionButtonStyle}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.background = "#f3f4f6")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.background = "#ffffff")
+                }
               >
-                <div className="border rounded-lg bg-muted/30 overflow-hidden">
-                  {previewDevice === "mobile" && (
-                    <div className="h-6 bg-muted flex items-center justify-center">
-                      <div className="w-16 h-1 bg-muted-foreground/30 rounded-full" />
-                    </div>
-                  )}
-                  <iframe
-                    srcDoc={htmlCode}
-                    className="w-full min-h-[500px] bg-white"
-                    title="Email Preview"
+                {copied ? (
+                  <Check size={14} style={{ marginRight: 6 }} />
+                ) : (
+                  <Copy size={14} style={{ marginRight: 6 }} />
+                )}
+                {copied ? "Copied!" : "Copy"}
+              </button>
+              <button
+                onClick={handleDownload}
+                style={modalActionButtonStyle}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.background = "#f3f4f6")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.background = "#ffffff")
+                }
+              >
+                <Download size={14} style={{ marginRight: 6 }} />
+                Download
+              </button>
+            </div>
+            <div style={codeScrollStyle}>
+              <pre style={preStyle}>{htmlCode}</pre>
+            </div>
+          </>
+        )}
+      </Modal>
+
+      {/* Email Preview Modal */}
+      <Modal
+        open={showPreview}
+        onClose={() => setShowPreview(false)}
+        title="Email Preview"
+        description="Preview how your email will look in email clients."
+        maxWidth={1024}
+        maxHeight="90vh"
+      >
+        {slots.previewDialog ? (
+          React.createElement(slots.previewDialog, {
+            html: htmlCode,
+            onClose: () => setShowPreview(false),
+          })
+        ) : (
+          <div style={{ overflowY: "auto", maxHeight: "600px" }}>
+            <div
+              style={{
+                margin: "0 auto",
+                transition: "max-width 0.3s",
+                maxWidth: previewDevice === "mobile" ? "375px" : "100%",
+              }}
+            >
+              <div
+                style={{
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "8px",
+                  background: "rgba(243,244,246,0.3)",
+                  overflow: "hidden",
+                }}
+              >
+                {previewDevice === "mobile" && (
+                  <div
                     style={{
-                      height: previewDevice === "mobile" ? "667px" : "600px",
+                      height: "24px",
+                      background: "#f3f4f6",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
-                  />
-                </div>
+                  >
+                    <div
+                      style={{
+                        width: "64px",
+                        height: "4px",
+                        background: "rgba(107,114,128,0.3)",
+                        borderRadius: "9999px",
+                      }}
+                    />
+                  </div>
+                )}
+                <iframe
+                  srcDoc={htmlCode}
+                  title="Email Preview"
+                  style={{
+                    width: "100%",
+                    minHeight: "500px",
+                    background: "#ffffff",
+                    border: "none",
+                    display: "block",
+                    height: previewDevice === "mobile" ? "667px" : "600px",
+                  }}
+                />
               </div>
-            </ScrollArea>
-          )}
-        </DialogContent>
-      </Dialog>
+            </div>
+          </div>
+        )}
+      </Modal>
     </>
   );
 };
