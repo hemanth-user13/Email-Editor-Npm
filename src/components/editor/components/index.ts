@@ -15,3 +15,4 @@ export { Testimonial } from './Testimonial';
 export { VideoPlaceholder } from './VideoPlaceholder';
 export { VariableText, AVAILABLE_VARIABLES } from './VariableText';
 export { IconList } from './IconList';
+export { RawHtml } from './RawHtml';

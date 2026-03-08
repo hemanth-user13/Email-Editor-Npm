@@ -18,6 +18,7 @@ import {
   Quote,
   Variable,
   Table,
+  Code,
 } from "lucide-react";
 
 import { Container } from "./components/Container";
@@ -155,6 +156,13 @@ export const DEFAULT_COMPONENTS: ComponentRegistry = {
     description: "Itemized billing table",
     icon: Table,
     category: "Invoice",
+  },
+  RawHtml: {
+    component: RawHtml,
+    label: "Raw HTML",
+    description: "Insert custom HTML directly",
+    icon: Code,
+    category: "Advanced",
   },
 };
 
