@@ -1,6 +1,6 @@
 {
   "name": "react-tailwind-email-editor",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "A Rich Tailwind based email editor",
   "type": "module",
   "main": "./dist/index.js",
