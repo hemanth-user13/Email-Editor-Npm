@@ -3,8 +3,8 @@ import { sassPlugin } from "esbuild-sass-plugin";
 import postcss from "postcss";
 import tailwindcss from "@tailwindcss/postcss";
 import autoprefixer from "autoprefixer";
-import { writeFileSync } from "fs";
-import { globSync } from "glob";
+import { writeFileSync, readFileSync } from "fs";
+import { resolve } from "path";
 
 export default defineConfig({
   entry: ["src/index.ts"],
@@ -34,15 +34,14 @@ export default defineConfig({
   },
 
   async onSuccess() {
-    const css = `@import "tailwindcss";`;
+    const css = readFileSync(resolve("src/styles.css"), "utf-8");
 
     const result = await postcss([
-      tailwindcss({
-        //@ts-ignore
-        content: globSync("src/**/*.{ts,tsx}"),
-      }),
+      tailwindcss(),
       autoprefixer(),
-    ]).process(css, { from: undefined });
+    ]).process(css, {
+      from: resolve("src/styles.css"),
+    });
 
     writeFileSync("dist/style.css", result.css);
     console.log("✅ dist/style.css generated!");
